@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { app, BrowserWindow, globalShortcut, clipboard } from 'electron'
+import { app, BrowserWindow, globalShortcut, clipboard, autoUpdater, dialog } from 'electron'
 import fs from 'fs'
 import path from 'path'
 import { keyTap } from 'robotjs'
 import activeWindow from 'active-win-universal'
+
 
 declare const MEX_WINDOW_WEBPACK_ENTRY: string
 
@@ -91,3 +92,22 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
+
+const server = "https://hazel-test-mukul-mehta.vercel.app/"
+const url = `${server}/update/${process.platform}/${app.getVersion()}`
+autoUpdater.setFeedURL({ url })
+
+
+autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+  const dialogOpts = {
+    type: 'info',
+    buttons: ['Install Update!', 'Later :('],
+    title: 'Mex Update!',
+    message: process.platform === 'win32' ? releaseNotes : releaseName,
+    detail: 'Updates are on thee way'
+  }
+dialog.showMessageBox(dialogOpts).then((returnValue) => {
+    if (returnValue.response === 0) autoUpdater.quitAndInstall()
+  })
+})
+

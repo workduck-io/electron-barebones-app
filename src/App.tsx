@@ -7,7 +7,7 @@ function App() {
   ipcRenderer.on('SEND_SELECTION', (_event, data) => {
     console.log(data)
   })
-  return <h1>Hello World!</h1>
+  return <h1>Hello World! This part is delivered as an update!</h1>
 }
 
 export default App

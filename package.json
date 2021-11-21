@@ -1,7 +1,7 @@
 {
   "name": "mex",
   "productName": "Mex",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Mex it to flex it",
   "main": ".webpack/main",
   "scripts": {
@@ -48,6 +48,7 @@
     "electron-squirrel-startup": "^1.0.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "robotjs": "^0.6.0"
+    "robotjs": "^0.6.0",
+    "update-electron-app": "^2.0.1"
   }
 }
