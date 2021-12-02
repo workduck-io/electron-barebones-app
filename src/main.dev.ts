@@ -1,10 +1,26 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { app, BrowserWindow, globalShortcut, clipboard, autoUpdater, dialog } from 'electron'
+import { app, BrowserWindow, globalShortcut, clipboard, crashReporter } from 'electron'
 import fs from 'fs'
 import path from 'path'
-import { keyTap } from 'robotjs'
+import { keyTap, typeString, setKeyboardDelay, keyToggle } from 'robotjs'
 import activeWindow from 'active-win-universal'
 
+import * as Sentry from '@sentry/electron'
+import { Integrations as TracingIntegrations } from '@sentry/tracing'
+
+import todesktop from '@todesktop/runtime'
+
+todesktop.init()
+
+Sentry.init({
+  dsn: 'https://b70722f27bbe487c913f2131a317f273@o1082596.ingest.sentry.io/6091296',
+  integrations: [new TracingIntegrations.BrowserTracing()],
+  tracesSampleRate: 1.0
+})
+
+app.commandLine.appendSwitch('inspect')
+
+crashReporter.start({ submitURL: 'http://192.168.1.90:1127' })
 
 declare const MEX_WINDOW_WEBPACK_ENTRY: string
 
@@ -13,7 +29,27 @@ export type SelectionType = {
   metadata: activeWindow.Result | undefined
 }
 
+app.disableHardwareAcceleration()
+
 export const simulateCopy = () => keyTap('c', process.platform === 'darwin' ? 'command' : 'control')
+
+export const getSelectedTextSync = () => {
+  setKeyboardDelay(100)
+  const contentBackup = clipboard.readText()
+  clipboard.clear()
+  keyToggle('shift', 'down')
+  keyTap('c', 'control')
+
+  const selectedText = clipboard.readHTML()
+  console.log('selected text: ', selectedText)
+  clipboard.writeText(contentBackup)
+
+  const ret = {
+    text: selectedText,
+    metadata: activeWindow.sync()
+  }
+  return ret
+}
 
 export const getSelectedText = async (): Promise<SelectionType> => {
   const contentBackup = clipboard.readText()
@@ -71,11 +107,24 @@ app.on('quit', () => {
 })
 
 const handleShortcut = async () => {
-  const selection = await getSelectedText()
-  console.log('Selection is: ', selection)
-  const anyContentPresent = Boolean(selection?.text)
-  if (anyContentPresent) {
-    mex?.webContents.send('SEND_SELECTION', selection)
+  mex?.webContents.send('SEND_SELECTION', { text: 'LAWDA LASSAN' })
+  try {
+    let selection: SelectionType
+    if (process.platform === 'win32') {
+      selection = getSelectedTextSync()
+    } else if (process.platform === 'darwin') {
+      selection = await getSelectedText()
+    }
+    console.log('Selection is: ', selection)
+    const anyContentPresent = selection.text
+    console.log(anyContentPresent)
+    if (anyContentPresent) {
+      console.log('Yo did this go?')
+      mex?.webContents.send('SEND_SELECTION', selection)
+      console.log('It did did it not')
+    }
+  } catch (err) {
+    mex?.webContents.send('SEND_SELECTION', { text: err })
   }
 }
 
@@ -92,22 +141,3 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
-
-const server = "https://hazel-test-mukul-mehta.vercel.app/"
-const url = `${server}/update/${process.platform}/${app.getVersion()}`
-autoUpdater.setFeedURL({ url })
-
-
-autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
-  const dialogOpts = {
-    type: 'info',
-    buttons: ['Install Update!', 'Later :('],
-    title: 'Mex Update!',
-    message: process.platform === 'win32' ? releaseNotes : releaseName,
-    detail: 'Updates are on thee way'
-  }
-dialog.showMessageBox(dialogOpts).then((returnValue) => {
-    if (returnValue.response === 0) autoUpdater.quitAndInstall()
-  })
-})
-

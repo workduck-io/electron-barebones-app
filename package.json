@@ -42,10 +42,14 @@
     "typescript": "^4.0.5"
   },
   "dependencies": {
+    "@sentry/electron": "^2.5.4",
+    "@sentry/tracing": "^6.15.0",
     "@timfish/forge-externals-plugin": "^0.1.2",
+    "@todesktop/runtime": "^0.6.5",
     "@workduck-io/electron-osx-sign": "^0.6.0",
     "active-win-universal": "^7.6.2",
     "electron-squirrel-startup": "^1.0.0",
+    "ffi-napi": "^4.0.3",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "robotjs": "^0.6.0",

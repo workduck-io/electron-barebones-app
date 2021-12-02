@@ -1,4 +1,4 @@
-const { inherits } = require("util")
+const { inherits } = require('util')
 
 module.exports = {
   packagerConfig: {
