@@ -1,26 +1,13 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { app, BrowserWindow, globalShortcut, clipboard, crashReporter } from 'electron'
+import { app, BrowserWindow, globalShortcut, clipboard, autoUpdater, dialog } from 'electron'
 import fs from 'fs'
 import path from 'path'
 import { keyTap, typeString, setKeyboardDelay, keyToggle } from 'robotjs'
 import activeWindow from 'active-win-universal'
+import MenuBuilder from './menu'
 
 import * as Sentry from '@sentry/electron'
 import { Integrations as TracingIntegrations } from '@sentry/tracing'
-
-import todesktop from '@todesktop/runtime'
-
-todesktop.init()
-
-Sentry.init({
-  dsn: 'https://b70722f27bbe487c913f2131a317f273@o1082596.ingest.sentry.io/6091296',
-  integrations: [new TracingIntegrations.BrowserTracing()],
-  tracesSampleRate: 1.0
-})
-
-app.commandLine.appendSwitch('inspect')
-
-crashReporter.start({ submitURL: 'http://192.168.1.90:1127' })
 
 declare const MEX_WINDOW_WEBPACK_ENTRY: string
 
@@ -28,6 +15,8 @@ export type SelectionType = {
   text: string
   metadata: activeWindow.Result | undefined
 }
+let updateCheckingFrequency = 3 * 60 * 60 * 1000
+let updateSetInterval: ReturnType<typeof setInterval> | undefined
 
 app.disableHardwareAcceleration()
 
@@ -89,6 +78,9 @@ const createMexWindow = () => {
 
   global.mex = mex
 
+  const menuBuilder = new MenuBuilder(mex)
+  menuBuilder.buildMenu()
+
   mex.on('closed', () => {
     mex = null
   })
@@ -141,3 +133,72 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
+
+export const checkIfAlpha = (version: string) => {
+  return version.includes('-alpha')
+}
+
+export const buildUpdateFeedURL = () => {
+  const version = app.getVersion()
+  const isAlpha = checkIfAlpha(version)
+  const base = isAlpha ? 'https://reserv.workduck.io' : 'https://reserv.workduck.io'
+  let url: string
+
+  if (process.arch == 'arm64') {
+    url = base + `/update/osx_arm64/${version}`
+  } else {
+    url = base + `/update/osx_64/${version}`
+  }
+  return url
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const handleUpdateErrors = (err) => {
+  console.log('There was an error, could not fetch updates: ', err.message)
+}
+
+export const setupAutoUpdates = () => {
+  const feedURL = buildUpdateFeedURL()
+  autoUpdater.setFeedURL({ url: feedURL })
+
+  console.log('Update URL is: ', feedURL)
+
+  autoUpdater.on('error', handleUpdateErrors)
+
+  autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+    console.log("Aye Aye Captain: There's an update")
+
+    const dialogOpts = {
+      title: "Aye Aye Captain: There's a Mex Update!",
+      type: 'info',
+      buttons: ['Install Update!', 'Later'],
+      message: process.platform === 'win32' ? releaseName : releaseNotes,
+      detail: 'Updates are on the way'
+    }
+
+    dialog.showMessageBox(dialogOpts).then((returnValue) => {
+      if (returnValue.response === 0) autoUpdater.quitAndInstall()
+    })
+  })
+
+  autoUpdater.on('update-available', () => {
+    console.log('Update Available')
+  })
+
+  autoUpdater.on('update-not-available', () => {
+    console.log('No Update Available!')
+  })
+}
+
+if (app.isPackaged || process.env.FORCE_PRODUCTION) {
+  updateCheckingFrequency = 60 * 60 * 1000
+  setupAutoUpdates()
+
+  setTimeout(() => {
+    autoUpdater.checkForUpdates()
+  }, 10 * 60 * 1000)
+
+  updateSetInterval = setInterval(() => {
+    autoUpdater.checkForUpdates()
+  }, updateCheckingFrequency)
+}
