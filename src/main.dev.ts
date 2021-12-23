@@ -141,7 +141,7 @@ export const checkIfAlpha = (version: string) => {
 export const buildUpdateFeedURL = () => {
   const version = app.getVersion()
   const isAlpha = checkIfAlpha(version)
-  const base = isAlpha ? 'https://reserv.workduck.io' : 'https://reserv.workduck.io'
+  const base = 'https://reserv.workduck.io'
   let url: string
 
   if (process.arch == 'arm64') {
@@ -149,6 +149,9 @@ export const buildUpdateFeedURL = () => {
   } else {
     url = base + `/update/osx_64/${version}`
   }
+
+  if (isAlpha) url = url + '/alpha'
+
   return url
 }
 

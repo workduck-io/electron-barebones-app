@@ -9,7 +9,7 @@ function App() {
     console.log('I was called')
     alert(data.text)
   })
-  return <h1>YAAAAAAAAAAAAAAY! THIS WAS DELIVERED AS PART OF ANOTHER UPDATE, AND VERSION IS NOW 0.3.0!</h1>
+  return <h1>Currently at Version 0.3.1-alpha.1</h1>
 }
 
 export default App
