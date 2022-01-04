@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { app, BrowserWindow, globalShortcut, clipboard, autoUpdater, dialog } from 'electron'
+import { app, BrowserWindow, globalShortcut, clipboard, autoUpdater, dialog, shell, ipcMain } from 'electron'
 import fs from 'fs'
 import path from 'path'
 import { keyTap, typeString, setKeyboardDelay, keyToggle } from 'robotjs'
@@ -21,6 +21,18 @@ let updateSetInterval: ReturnType<typeof setInterval> | undefined
 app.disableHardwareAcceleration()
 
 export const simulateCopy = () => keyTap('c', process.platform === 'darwin' ? 'command' : 'control')
+
+const config = {
+  cognito: {
+    REGION: 'us-east-1',
+    USER_POOL_ID: 'us-east-1_Zu7FAh7hj',
+    APP_CLIENT_ID: '2ihj64grcq87pe3svecr5hafk2',
+    IDENTITY_POOL_ID: 'us-east-1:315a075f-0427-46bc-9d82-e08133591944',
+    COGNITO_SCOPE: 'aws.cognito.signin.user.admin email openid phone profile',
+    REDIRECT_URI: 'http://localhost:3000',
+    COGNITO_BASE_URL: 'https://workduck.auth.us-east-1.amazoncognito.com'
+  }
+}
 
 export const getSelectedTextSync = () => {
   setKeyboardDelay(100)
@@ -204,4 +216,21 @@ if (app.isPackaged || process.env.FORCE_PRODUCTION) {
   updateSetInterval = setInterval(() => {
     autoUpdater.checkForUpdates()
   }, updateCheckingFrequency)
+}
+
+ipcMain.on('INIT_GOOGLE_OAUTH', () => {
+  console.log('Received Google OAuth Init Event')
+  handleGoogleOAuth()
+})
+
+export const handleGoogleOAuth = () => {
+  try {
+    const { COGNITO_BASE_URL, REDIRECT_URI, APP_CLIENT_ID, COGNITO_SCOPE } = config.cognito
+    const authURL = `${COGNITO_BASE_URL}/oauth2/authorize?identity_provider=Google&redirect_uri=${REDIRECT_URI}&response_type=TOKEN&client_id=${APP_CLIENT_ID}&scope=${COGNITO_SCOPE}`
+    console.log('Auth URL: ', authURL)
+
+    shell.openExternal(authURL)
+  } catch (err) {
+    console.log('Error is: ', err)
+  }
 }

@@ -48,6 +48,7 @@
     "@todesktop/runtime": "^0.6.5",
     "@workduck-io/electron-osx-sign": "^0.6.0",
     "active-win-universal": "^7.6.2",
+    "aws-amplify": "^4.3.11",
     "electron-squirrel-startup": "^1.0.0",
     "ffi-napi": "^4.0.3",
     "react": "^17.0.2",
