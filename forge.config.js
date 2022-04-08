@@ -1,35 +1,22 @@
-const { inherits } = require('util')
+const { version } = require('./package.json')
+const semver = require('semver')
+
+const checkAlpha = (version) => {
+  const parsed = semver.parse(version)
+  if (parsed.prerelease[0] === 'alpha') return true
+
+  return false
+}
+const isAlpha = checkAlpha(version)
+
+const appBundleId = isAlpha ? 'com.workduck.eba-alpha' : 'com.workduck.eba'
+const icon = isAlpha ? 'assets/icon-alpha.icns' : 'assets/icon.icns'
 
 module.exports = {
   packagerConfig: {
-    icon: 'assets/icon.icns'
+    icon: icon,
+    appBundleId: appBundleId
   },
-  makers: [
-    {
-      name: '@electron-forge/maker-squirrel',
-      config: {
-        name: 'mex'
-      }
-    },
-    {
-      name: '@electron-forge/maker-zip',
-      platforms: ['darwin']
-    },
-    {
-      name: '@electron-forge/maker-deb',
-      config: {}
-    },
-    {
-      name: '@electron-forge/maker-rpm',
-      config: {}
-    },
-    {
-      name: '@electron-forge/maker-dmg',
-      config: {
-        format: 'ULFO'
-      }
-    }
-  ],
   plugins: [
     [
       '@electron-forge/plugin-webpack',

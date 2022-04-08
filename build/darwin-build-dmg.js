@@ -6,9 +6,9 @@ const path = require('path')
 
 function buildDMG(arch) {
   return createDMG({
-    appPath: path.join(cwd, `out/Mex-darwin-${arch}/Mex.app`),
-    name: 'Mex',
-    title: 'Mex',
+    appPath: path.join(cwd, `out/Eba Alpha-darwin-${arch}/Eba Alpha.app`),
+    name: 'Eba Alpha',
+    title: 'Eba Alpha',
     icon: path.join(cwd, './assets/icon.icns'),
     iconSize: 80,
     format: 'ULFO',
@@ -18,7 +18,7 @@ function buildDMG(arch) {
         x: 192,
         y: 144,
         type: 'file',
-        path: path.join(cwd, `out/Mex-darwin-${arch}/Mex.app`)
+        path: path.join(cwd, `out/Eba Alpha-darwin-${arch}/Eba Alpha.app`)
       }
     ],
     overwrite: true,
@@ -40,8 +40,8 @@ function main(arch) {
   buildDMG(arch)
     .then(() => {
       const version = getPackageVersion()
-      const newFilename = `Mex-${version}-mac-${arch}.dmg`
-      fs.renameSync(path.join(cwd, 'out/make/Mex.dmg'), path.join(cwd, 'out/make', newFilename))
+      const newFilename = `Eba Alpha-${version}-mac-${arch}.dmg`
+      fs.renameSync(path.join(cwd, 'out/make/Eba Alpha.dmg'), path.join(cwd, 'out/make', newFilename))
     })
     .catch((err) => console.log(err))
 }

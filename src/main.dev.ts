@@ -1,3 +1,4 @@
+import { ipcMain, ipcRenderer } from 'electron'
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { app, BrowserWindow, globalShortcut, clipboard, autoUpdater, dialog } from 'electron'
 import fs from 'fs'
@@ -205,3 +206,8 @@ if (app.isPackaged || process.env.FORCE_PRODUCTION) {
     autoUpdater.checkForUpdates()
   }, updateCheckingFrequency)
 }
+
+ipcMain.handle('GET_VERSION', async (_event) => {
+  const version = app.getVersion()
+  return version
+})
