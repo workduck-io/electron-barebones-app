@@ -1,15 +1,23 @@
 {
   "name": "eba-alpha",
   "productName": "Eba Alpha",
-  "version": "0.9.1-alpha.1",
+  "version": "0.9.1-alpha.2",
   "description": "Mex it to flex it",
   "main": ".webpack/main",
   "scripts": {
     "prepare": "husky install",
     "start": "electron-forge start --inspect-electron",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "publish": "electron-forge publish",
+    "prebuild": "ts-node build/prepare-build.ts",
+    "nativedeps:x64": "./node_modules/.bin/electron-rebuild --force --arch=x64",
+    "nativedeps:arm64": "./node_modules/.bin/electron-rebuild --force --arch=arm64",
+    "prepackage:x64": "ts-node build/prepare-build.ts",
+    "prepackage:arm64": "ts-node build/prepare-build.ts",
+    "package:x64": "electron-forge package --arch=x64",
+    "package:arm64": "electron-forge package --arch=arm64",
+    "prepublish:x64": "yarn package:x64",
+    "prepublish:arm64": "yarn package:arm64",
+    "publish:x64": "ts-node build/darwin-utils.ts x64",
+    "publish:arm64": "ts-node build/darwin-utils.ts arm64",
     "lint": "eslint --ext .ts,.tsx ."
   },
   "keywords": [],
@@ -34,13 +42,13 @@
     "@electron-forge/plugin-webpack": "6.0.0-beta.61",
     "@types/node": "^16.11.7",
     "@vercel/webpack-asset-relocator-loader": "1.6.0",
-    "electron": "15.3.1",
     "fork-ts-checker-webpack-plugin": "^6.0.1",
     "husky": "^7.0.4",
     "node-loader": "^2.0.0",
     "ts-loader": "^9.2.2",
     "ts-node": "^10.7.0",
-    "typescript": "^4.0.5"
+    "typescript": "^4.0.5",
+    "electron": "17.1.0"
   },
   "dependencies": {
     "@sentry/electron": "^2.5.4",
